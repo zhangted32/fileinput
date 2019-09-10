@@ -1,52 +1,66 @@
 package com.company.rawdata.generate;
 //文件名 :fileStreamTest2.java
 import java.io.*;
+import java.util.*;
+import java.lang.*;
 import com.company.rawdata.generate.DataCollector;
 import com.company.rawdata.generate.DataGenerator;
 
-public class fileStreamTest2 {
-    public static void main(String[] args) throws IOException {
-/*
-        File f = new File("a.txt");
-        FileOutputStream fop = new FileOutputStream(f);
-        // 构建FileOutputStream对象,文件不存在会自动新建
+public class fileStreamTest2 implements DataGenerator, DataCollector{
+    private static ArrayList<String> list;
 
-        OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
-        // 构建OutputStreamWriter对象,参数可以指定编码,默认为操作系统默认编码,windows上是gbk
+    private static File f;
+    private int index = 0;
 
-        writer.append("中文输入");
-        // 写入到缓冲区
 
-        writer.append("\r\n");
-        // 换行
-
-        writer.append("English");
-        // 刷新缓存冲,写入到文件,如果下面已经没有写入的内容了,直接close也会写入
-
-        writer.close();
-        // 关闭写入流,同时会把缓冲区内容写入文件,所以上面的注释掉
-
-        fop.close();
-        // 关闭输出流,释放系统资源
-*/
-        File f = new File("a.txt");
-        FileInputStream fip = new FileInputStream(f);
-        // 构建FileInputStream对象
-
-        InputStreamReader reader = new InputStreamReader(fip, "UTF-8");
-        // 构建InputStreamReader对象,编码与写入相同
-
-        StringBuffer sb = new StringBuffer();
-        while (reader.ready()) {
-            sb.append((char) reader.read());
-            // 转成char加到StringBuffer对象中
-        }
-        System.out.println(sb.toString());
-        reader.close();
-        // 关闭读取流
-
-        fip.close();
-        // 关闭输入流,释放系统资源
-
+    @Override
+    public void collect(String path) throws IOException {
+        list = (ArrayList<String>) readTxtFileIntoStringArrList(path);
     }
+
+    @Override
+    public boolean hasNext() {
+        if (index >= list.size())
+            return false;
+        else
+            return true;
+    }
+
+    @Override
+    public String generator() {
+        if (hasNext()) {
+            index = index + 1;
+            return list.get(index - 1);
+
+        }
+        else
+            return null;
+    }
+    public static List<String> readTxtFileIntoStringArrList(String filePath) {
+        List<String> list = new ArrayList<String>();
+        try {
+            String encoding = "UTF-8";
+            File file = new File(filePath);
+            if (file.isFile() && file.exists()) { // 判断文件是否存在
+                InputStreamReader read = new InputStreamReader(
+                        new FileInputStream(file), encoding);// 考虑到编码格式
+                BufferedReader bufferedReader = new BufferedReader(read);
+                String lineTxt = null;
+
+                while ((lineTxt = bufferedReader.readLine()) != null) {
+                    list.add(lineTxt);
+                }
+                bufferedReader.close();
+                read.close();
+            } else {
+                System.out.println("找不到指定的文件");
+            }
+        } catch (Exception e) {
+            System.out.println("读取文件内容出错");
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
 }
